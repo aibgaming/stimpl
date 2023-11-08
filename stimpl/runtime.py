@@ -23,7 +23,7 @@ class State(object):
         return State(variable_name, variable_value, variable_type, self)
 
     def get_value(self, variable_name) -> Any:
-        """ TODO: Implement. """
+        """ TODO: DONE. """
         if self.variable_name == variable_name:
             return self.value
         if self.next_state:
@@ -84,7 +84,10 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
 
         case Sequence(exprs=exprs) | Program(exprs=exprs):
             """ TODO: Implement. """
-            pass
+            last_result = None
+            for expr in exprs:
+                last_result, _, state = evaluate(expr, state)
+            return (last_result, Unit(), state)
 
         case Variable(variable_name=variable_name):
             value = state.get_value(variable_name)
