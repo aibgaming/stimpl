@@ -24,6 +24,10 @@ class State(object):
 
     def get_value(self, variable_name) -> Any:
         """ TODO: Implement. """
+        if self.variable_name == variable_name:
+            return self.value
+        if self.next_state:
+            return self.next_state.get_value(variable_name)
         return None
 
     def __repr__(self) -> str:
