@@ -85,15 +85,15 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
 
         case Sequence(exprs=exprs) | Program(exprs=exprs):
             """ TODO: DONE. """
-            new_val, new_type, new_state =None,None,state
-            its_Empty = True
+            new_variable, new_type, new_state =None, None, state        # Intialize an empty variable with None type
+            EMPTY_FLAG = True
             
             for expr in exprs:
-                its_Empty = False
-                new_val,new_type, new_state = evaluate(expr,new_state)
-            if its_Empty:
-                return (None, Unit(), state)
-            return(new_val,new_type,new_state)
+                EMPTY_FLAG = False                                                  # Flip the flag varaible since exprs is not Empty
+                new_variable, new_type, new_state = evaluate(expr, new_state)       # Assign the new variable with each evaluated expression
+            if EMPTY_FLAG:
+                return (None, Unit(), state)                                        # Return an Empty variable of Unit() type if no exprs is Empty 
+            return(new_variable,new_type,new_state)
 
         case Variable(variable_name=variable_name):
             value = state.get_value(variable_name)
@@ -139,57 +139,60 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
         case Subtract(left=left, right=right):
             """ TODO: DONE. """
             result = 0
-            left_result, left_type, new_state = evaluate(left, state)
-            right_result, right_type, new_state = evaluate(right, new_state)
+            left_result, left_type, new_state = evaluate(left, state)           # Evaluate left variable tuple
+            right_result, right_type, new_state = evaluate(right, new_state)    # Evaluate right variable tuple
 
-            if left_type != right_type:
+            if left_type != right_type:                                         # Ensure that both variables are the same type
                 raise InterpTypeError(f"""Mismatched types for Subtract:
             Cannot subtract {right_type} from {left_type}""")
-
+            
+            # Since both variables are the same type, just check the left variable
             match left_type:
                 case Integer() | FloatingPoint():
-                    result = left_result - right_result         # Perform subtraction and return the result
+                    result = left_result - right_result         # Perform subtraction and pass the result
                 case _:
                     raise InterpTypeError(f"""Cannot subtract {left_type}s""")
-            return (result, left_type, new_state)
+            return (result, left_type, new_state)               # Return result variable tuple
 
         case Multiply(left=left, right=right):
             """ TODO: DONE. """
             result = 0
-            left_result, left_type, new_state = evaluate(left, state)
-            right_result, right_type, new_state = evaluate(right, new_state)
+            left_result, left_type, new_state = evaluate(left, state)           # Evaluate left variable tuple
+            right_result, right_type, new_state = evaluate(right, new_state)    # Evaluate right variable tuple
 
-            if left_type != right_type:
+            if left_type != right_type:                                         # Ensure that both variables are the same type
                 raise InterpTypeError(f"""Mismatched types for Multiply:
             Cannot multiply {left_type} with {right_type}""")
 
+            # Since both variables are the same type, just check the left variable
             match left_type:
                 case Integer() | FloatingPoint():
-                    result = left_result * right_result         # Perform multiplication and return the result
+                    result = left_result * right_result         # Perform multiplication and pass the result
                 case _:
                     raise InterpTypeError(f"""Cannot multiply {left_type}s""")
             
-            return (result, left_type, new_state)
+            return (result, left_type, new_state)           # Return result variable tuple
 
         case Divide(left=left, right=right):
             """ TODO: DONE. """
             result = 0
-            left_result, left_type, new_state = evaluate(left, state)
-            right_result, right_type, new_state = evaluate(right, new_state)
+            left_result, left_type, new_state = evaluate(left, state)           # Evaluate left variable tuple
+            right_result, right_type, new_state = evaluate(right, new_state)    # Evaluate right variable tuple
 
-            if left_type != right_type:
+            if left_type != right_type:                                         # Ensure that both variables are the same type
                 raise InterpTypeError(f"""Mismatched types for Divide:
             Cannot divide {right_type} from {left_type}""")
 
             if right_result == 0:
                 raise InterpMathError(f"""Cannot divide by 0""")    # Raise a math error if division by 0 is attempted
 
+            # Since both variables are the same type, just check the left variable
             match left_type:
                 case Integer() | FloatingPoint():
-                    result = left_result / right_result         # Perform division and return the result
+                    result = left_result / right_result         # Perform division and pass the result
                 case _:
                     raise InterpTypeError(f"""Cannot divide {left_type}s""")
-            return (result, left_type, new_state)
+            return (result, left_type, new_state)           # Return result variable tuple
 
         case And(left=left, right=right):
             left_value, left_type, new_state = evaluate(left, state)
@@ -214,16 +217,17 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
 
             if left_type != right_type:             # Raise type error to prevent mismatching of types
                 raise InterpTypeError(f"""Mismatched types for Or:
-            Cannot Or {left_type} to {right_type}""")
-
+            Cannot evaluate {left_type} or {right_type}""")
+            
+            # Since both variables are the same type, just check the left variable
             match left_type:
                 case Boolean():
-                    result = left_value or right_value      # Return the result of or operator
+                    result = left_value or right_value      # Pass the result of or operator
                 case _:
                     raise InterpTypeError(
                         "Cannot perform logical Or on non-boolean operands.")
 
-            return (result, left_type, new_state)
+            return (result, left_type, new_state)       # Return result tuple
 
         case Not(expr=expr):
             """ TODO: DONE. """
@@ -233,18 +237,18 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
                     result = not(new_value)   # Value evaluated by Not operation
                 case _:
                     raise InterpTypeError("Cannot perform logical Not on non-boolean operands.")
-            return (result, new_type, new_state)
+            return (result, new_type, new_state)        # Return result tuple
 
         case If(condition=condition, true=true, false=false):
             """ TODO: DONE. """
             condition_value, condition_type, new_state = evaluate(condition, state)
             match condition_type:
                 case Boolean():
-                    result = condition_value
+                    result = condition_value            # Just pass the condition value to the result
                 case _:  
                     raise InterpTypeError("Cannot evaluate logical If on non-boolean conditions.")
                 
-            if result:
+            if result:                              # Evaluate the boolean condition value and return true/false (don't use python True/False)
                 return evaluate(true, new_state)
             return evaluate(false, new_state)
 
@@ -255,20 +259,22 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
 
             result = None
 
+            # Raise type error to prevent mismatching of types
             if left_type != right_type:
                 raise InterpTypeError(f"""Mismatched types for Lt:
-            Cannot compare {left_type} and {right_type}""")
+            Cannot evaluate {left_type} < {right_type}""")
 
+            # Since both variables are the same type, just check the left variable
             match left_type:
                 case Integer() | Boolean() | String() | FloatingPoint():
-                    result = left_value < right_value
+                    result = left_value < right_value       # Pass the result of < operator
                 case Unit():
                     result = False
                 case _:
                     raise InterpTypeError(
                         f"Cannot perform < on {left_type} type.")
 
-            return (result, Boolean(), new_state)
+            return (result, Boolean(), new_state)       
 
         case Lte(left=left, right=right):
             """ TODO: DONE. """
@@ -276,14 +282,15 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
             right_value, right_type, new_state = evaluate(right, new_state)
 
             result = None
-
+            
+            # Raise type error to prevent mismatching of types
             if left_type != right_type:
                 raise InterpTypeError(f"""Mismatched types for Lte:
-            Cannot compare {left_type} to {right_type}""")
+            Cannot evaluate {left_type} <= {right_type}""")
 
             match left_type:
                 case Integer() | Boolean() | String() | FloatingPoint():
-                    result = left_value <= right_value
+                    result = left_value <= right_value          # Pass the result of <= operator
                 case Unit():
                     result = True
                 case _:
