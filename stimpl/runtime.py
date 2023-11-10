@@ -376,7 +376,15 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
 
         case While(condition=condition, body=body):
             """ TODO: Implement. """
-            pass
+            condition_result, condition_type, new_state = evaluate(condition, state)
+            match condition_type:
+                case Boolean():                   # Condition can only be boolean
+                    while(condition_result):
+                        body_result, body_type, new_state = evaluate(body, new_state)   # Evaluate body to update the state for condition if applicable
+                        condition_result, condition_type, new_state = evaluate(condition, new_state) # Reevaluates condition before next 
+                    return (condition_result, condition_type, new_state) # Return the final value of the while loop condition (false, boolean)
+                case _:
+                    raise InterpTypeError(f"Cannot evaluate non-boolean conditional")
 
         case _:
             raise InterpSyntaxError("Unhandled!")
