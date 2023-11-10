@@ -24,12 +24,12 @@ class State(object):
 
     def get_value(self, variable_name) -> Any:
         """ TODO: DONE. """
-        if self.variable_name == variable_name:
-            return self.value
-        elif self.next_state == None:
+        if self.variable_name == variable_name:     # Return value if a State with variable_name exists 
+            return self.value           
+        elif self.next_state == None:               # Returns None if the current state is the last state
             return None
         else:
-            return self.next_state.get_value(variable_name)
+            return self.next_state.get_value(variable_name)     # Else continue searching for value in the next_state
 
     def __repr__(self) -> str:
         return f"{self.variable_name}: {self.value}, " + repr(self.next_state)
@@ -269,7 +269,7 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
             # Since both variables are the same type, just check the left variable
             match left_type:
                 case Integer() | Boolean() | String() | FloatingPoint():
-                    result = left_value < right_value       # Pass the result of < operator
+                    result = left_value < right_value           # Pass the result of < operator
                 case Unit():
                     result = False
                 case _:
@@ -316,7 +316,7 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
 
             match left_type:
                 case Integer() | Boolean() | String() | FloatingPoint():
-                    result = left_value > right_value       # Pass the result of > operator
+                    result = left_value > right_value           # Pass the result of > operator
                 case Unit():
                     result = False
                 case _:
@@ -339,7 +339,7 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
 
             match left_type:
                 case Integer() | Boolean() | String() | FloatingPoint():
-                    result = left_value >= right_value      # Pass the result of >= operator
+                    result = left_value >= right_value          # Pass the result of >= operator
                 case Unit():
                     result = True
                 case _:
@@ -354,14 +354,14 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
             right_value, right_type, new_state = evaluate(right, new_state)
 
             result = None
-
+            # Raise type error to prevent mismatching of types
             if left_type != right_type:
                 raise InterpTypeError(f"""Mismatched types for Eq:
-            Cannot compare {left_type} to {right_type}""")
+            Cannot evaluate {left_type} == {right_type}""")
 
             match left_type:
                 case Integer() | Boolean() | String() | FloatingPoint():
-                    result = left_value == right_value
+                    result = left_value == right_value      # Pass the result of == operator
                 case Unit():
                     result = True
                 case _:
@@ -376,14 +376,14 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
             right_value, right_type, new_state = evaluate(right, new_state)
 
             result = None
-
+            # Raise type error to prevent mismatching of types
             if left_type != right_type:
                 raise InterpTypeError(f"""Mismatched types for Ne:
-            Cannot compare {left_type} to {right_type}""")
+            Cannot evaluate {left_type} != {right_type}""")
 
             match left_type:
                 case Integer() | Boolean() | String() | FloatingPoint():
-                    result = left_value != right_value
+                    result = left_value != right_value      # Pass the result of != operator
                 case Unit():
                     result = False
                 case _:
@@ -398,11 +398,11 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
             match condition_type:
                 case Boolean():                   # Condition type should be boolean
                     while(condition_result):    # Iterate while condition_result is true
-                        body_result, body_type, new_state = evaluate(body, new_state)   # Evaluate body if condition is true
+                        body_result, body_type, new_state = evaluate(body, new_state)   # Evaluate body each iteration
                         condition_result, condition_type, new_state = evaluate(condition, new_state) # Re-evaluate condition each iteration  
                     return (condition_result, condition_type, new_state) # Return the condition tuple once iteration is over
                 case _:
-                    raise InterpTypeError(f"Cannot evaluate non-boolean conditional")
+                    raise InterpTypeError(f"Cannot evaluate non-boolean conditional")       # Raise error if not boolean
 
         case _:
             raise InterpSyntaxError("Unhandled!")
