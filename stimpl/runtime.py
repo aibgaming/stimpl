@@ -188,8 +188,10 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
 
             # Since both variables are the same type, just check the left variable
             match left_type:
-                case Integer() | FloatingPoint():
-                    result = left_result / right_result         # Perform division and pass the result
+                case Integer():
+                    result = left_result // right_result        # Perform integer division and pass the result
+                case FloatingPoint():
+                    result = left_result / right_result         # Perform regular float division and pass the result
                 case _:
                     raise InterpTypeError(f"""Cannot divide {left_type}s""")
             return (result, left_type, new_state)           # Return result variable tuple
@@ -288,6 +290,7 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
                 raise InterpTypeError(f"""Mismatched types for Lte:
             Cannot evaluate {left_type} <= {right_type}""")
 
+            # Since both variables are the same type, just check the left variable
             match left_type:
                 case Integer() | Boolean() | String() | FloatingPoint():
                     result = left_value <= right_value          # Pass the result of <= operator
@@ -306,13 +309,14 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
 
             result = None
 
+            # Raise type error to prevent mismatching of types
             if left_type != right_type:
                 raise InterpTypeError(f"""Mismatched types for Gt:
-            Cannot compare {left_type} to {right_type}""")
+            Cannot evaluate {left_type} > {right_type}""")
 
             match left_type:
                 case Integer() | Boolean() | String() | FloatingPoint():
-                    result = left_value > right_value
+                    result = left_value > right_value       # Pass the result of > operator
                 case Unit():
                     result = False
                 case _:
@@ -328,13 +332,14 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
 
             result = None
 
+            # Raise type error to prevent mismatching of types
             if left_type != right_type:
                 raise InterpTypeError(f"""Mismatched types for Gte:
-            Cannot compare {left_type} to {right_type}""")
+            Cannot evaluate {left_type} >= {right_type}""")
 
             match left_type:
                 case Integer() | Boolean() | String() | FloatingPoint():
-                    result = left_value >= right_value
+                    result = left_value >= right_value      # Pass the result of >= operator
                 case Unit():
                     result = True
                 case _:
