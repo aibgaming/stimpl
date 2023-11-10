@@ -376,15 +376,29 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
 
         case While(condition=condition, body=body):
             """ TODO: Implement. """
-            condition_result, condition_type, new_state = evaluate(condition, state)
+            condition_value, condition_type, new_state = evaluate(condition, state)
+            """ Check if Boolean is equal to condition value """
             match condition_type:
-                case Boolean():                   # Condition can only be boolean
-                    while(condition_result):
-                        body_result, body_type, new_state = evaluate(body, new_state)   # Evaluate body to update the state for condition if applicable
-                        condition_result, condition_type, new_state = evaluate(condition, new_state) # Reevaluates condition before next 
-                    return (condition_result, condition_type, new_state) # Return the final value of the while loop condition (false, boolean)
+                case Boolean():
+                    result = condition_value
                 case _:
-                    raise InterpTypeError(f"Cannot evaluate non-boolean conditional")
+                    """ Error handling: Display error if false """
+                    raise InterpTypeError(
+                        "Cannot perform logical if condition checkon non-boolean operand.")
+
+            new_value,new_type= None,None
+            """If the condition is true evaluate and go through the body"""
+            while result:
+                new_val, new_type, new_state = evaluate(body, new_state)
+                condition_value,condition_type,new_state = evaluate(condition,new_state)
+                match condition_type:
+                    case Boolean():
+                        result = condition_value
+                    case _:
+                        raise InterpTypeError("Cannot perform logical if condition checkon non-boolean operand.")                                 
+
+            """ Else reutrn the tuple from the false expression """
+            return (0, Boolean(), new_state)
 
         case _:
             raise InterpSyntaxError("Unhandled!")
