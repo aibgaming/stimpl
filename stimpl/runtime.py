@@ -26,9 +26,10 @@ class State(object):
         """ TODO: DONE. """
         if self.variable_name == variable_name:
             return self.value
-        if self.next_state:
+        elif self.next_state == None:
+            return None
+        else:
             return self.next_state.get_value(variable_name)
-        return None
 
     def __repr__(self) -> str:
         return f"{self.variable_name}: {self.value}, " + repr(self.next_state)
@@ -376,29 +377,15 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
 
         case While(condition=condition, body=body):
             """ TODO: Implement. """
-            condition_value, condition_type, new_state = evaluate(condition, state)
-            """ Check if Boolean is equal to condition value """
+            condition_result, condition_type, new_state = evaluate(condition, state)
             match condition_type:
-                case Boolean():
-                    result = condition_value
+                case Boolean():                   # Condition type should be boolean
+                    while(condition_result):    # Iterate while condition_result is true
+                        body_result, body_type, new_state = evaluate(body, new_state)   # Evaluate body if condition is true
+                        condition_result, condition_type, new_state = evaluate(condition, new_state) # Re-evaluate condition each iteration  
+                    return (condition_result, condition_type, new_state) # Return the condition tuple once iteration is over
                 case _:
-                    """ Error handling: Display error if false """
-                    raise InterpTypeError(
-                        "Cannot perform logical if condition checkon non-boolean operand.")
-
-            new_value,new_type= None,None
-            """If the condition is true evaluate and go through the body"""
-            while result:
-                new_val, new_type, new_state = evaluate(body, new_state)
-                condition_value,condition_type,new_state = evaluate(condition,new_state)
-                match condition_type:
-                    case Boolean():
-                        result = condition_value
-                    case _:
-                        raise InterpTypeError("Cannot perform logical if condition checkon non-boolean operand.")                                 
-
-            """ Else reutrn the tuple from the false expression """
-            return (0, Boolean(), new_state)
+                    raise InterpTypeError(f"Cannot evaluate non-boolean conditional")
 
         case _:
             raise InterpSyntaxError("Unhandled!")
