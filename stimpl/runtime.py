@@ -85,10 +85,15 @@ def evaluate(expression: Expr, state: State) -> Tuple[Optional[Any], Type, State
 
         case Sequence(exprs=exprs) | Program(exprs=exprs):
             """ TODO: DONE. """
-            last_result = None
+            new_val, new_type, new_state =None,None,state
+            its_Empty = True
+            
             for expr in exprs:
-                last_result, _, state = evaluate(expr, state)
-            return (last_result, Unit(), state)
+                its_Empty = False
+                new_val,new_type, new_state = evaluate(expr,new_state)
+            if its_Empty:
+                return (None, Unit(), state)
+            return(new_val,new_type,new_state)
 
         case Variable(variable_name=variable_name):
             value = state.get_value(variable_name)
